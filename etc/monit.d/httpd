@@ -1,0 +1,18 @@
+check process apache with pidfile /var/run/httpd/httpd.pid
+   group www
+   group apache
+   start program = "service httpd start"
+   stop program  = "service httpd stop"
+   # if 4 restarts within 20 cycles then timeout
+   if failed host localhost port 80 with protocol http and request "/" with timeout 25 seconds for 2 times within 3 cycles
+     then exec "/etc/monit/pagerduty-trigger httpd-down-cannot-autoresolve"
+   depend httpd_bin
+   depend httpd_rc
+
+ check file httpd_bin with path /usr/sbin/httpd
+   group apache
+   include /etc/monit.d/templates/rootbin
+
+ check file httpd_rc with path /etc/init.d/httpd
+   group apache
+   include /etc/monit.d/templates/rootbin
